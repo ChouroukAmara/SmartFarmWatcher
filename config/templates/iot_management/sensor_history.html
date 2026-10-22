@@ -1,0 +1,261 @@
+{% extends "dashboard/dashboard_base.html" %}
+
+{% block title %}Sensor History{% endblock %}
+
+{% block extra_css %}
+<style>
+    .sh-header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    .sh-summary {
+        color: #6c757d;
+        font-size: 14px;
+    }
+
+    .sh-summary strong {
+        color: var(--primary-color);
+    }
+
+    .sh-filter select {
+        padding: 9px 16px;
+        border-radius: 10px;
+        border: 1px solid #e0e0e0;
+        font-size: 14px;
+        background: white;
+        color: #2c3e50;
+        min-width: 220px;
+    }
+
+    .history-table-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+    }
+
+    .table-scroll {
+        overflow-x: auto;
+        max-height: 65vh;
+        overflow-y: auto;
+    }
+
+    table.history-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    table.history-table thead th {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        text-align: left;
+        padding: 14px 20px;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        color: #6c757d;
+        background: #fafbfa;
+        border-bottom: 2px solid #f1f1f1;
+        white-space: nowrap;
+    }
+
+    table.history-table td {
+        padding: 13px 20px;
+        font-size: 14px;
+        color: #2c3e50;
+        border-bottom: 1px solid #f5f5f5;
+        white-space: nowrap;
+    }
+
+    table.history-table tbody tr:nth-child(even) {
+        background: #fcfdfc;
+    }
+
+    table.history-table tbody tr:hover td {
+        background: #f0f9f0;
+    }
+
+    .sensor-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .sensor-badge.env {
+        background: #fff3e0;
+        color: #e65100;
+    }
+
+    .sensor-badge.water {
+        background: #e3f2fd;
+        color: #0d6efd;
+    }
+
+    .value-cell {
+        font-weight: 600;
+    }
+
+    .value-cell.value-optimal { color: #2e7d32; }
+    .value-cell.value-stress  { color: #e65100; }
+    .value-cell.value-critical { color: #b71c1c; }
+    .value-cell.value-muted  { color: #adb5bd; font-weight: 400; }
+
+    .sh-pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 14px;
+        padding: 18px;
+        border-top: 1px solid #f1f1f1;
+    }
+
+    .sh-page-btn {
+        padding: 7px 16px;
+        border-radius: 10px;
+        border: 1px solid var(--primary-color);
+        color: var(--primary-color);
+        background: white;
+        font-size: 13px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .sh-page-btn:hover {
+        background: var(--primary-color);
+        color: white;
+    }
+
+    .sh-page-info {
+        color: #6c757d;
+        font-size: 13px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="welcome-card">
+    <h1 class="mb-2" style="color: #2e7d32;"><i class="fas fa-history"></i> Sensor History</h1>
+    <p class="mb-0 opacity-75">Historical readings from your farm's sensors.</p>
+</div>
+
+<div class="sh-header-row">
+    <div class="sh-summary">
+        {% if page_obj %}
+            <strong>{{ page_obj.paginator.count }}</strong> reading{{ page_obj.paginator.count|pluralize }} total
+        {% endif %}
+    </div>
+
+    <div class="sh-filter">
+        <form method="get">
+            <select name="node" onchange="this.form.submit()">
+                <option value="">All sensors</option>
+                {% for node in nodes %}
+                <option value="{{ node.id }}" {% if node.id == selected_node_id %}selected{% endif %}>
+                    {% if node.node_type == 'env' %}🌡️{% else %}💧{% endif %} {{ node.name }}
+                </option>
+                {% endfor %}
+            </select>
+        </form>
+    </div>
+</div>
+
+<div class="history-table-card">
+    {% if page_obj %}
+    <div class="table-scroll">
+        <table class="history-table">
+            <thead>
+                <tr>
+                    <th><i class="far fa-clock"></i> Date &amp; Time</th>
+                    <th><i class="fas fa-microchip"></i> Sensor</th>
+                    <th><i class="fas fa-thermometer-half"></i> Temperature</th>
+                    <th><i class="fas fa-tint"></i> Humidity</th>
+                    <th><i class="fas fa-layer-group"></i> Soil Moisture</th>
+                    <th><i class="fas fa-flask"></i> Salinity</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for reading in page_obj %}
+                <tr>
+                    <td>{{ reading.created_at|date:"d M Y, H:i" }}</td>
+                    <td>
+                        <span class="sensor-badge {{ reading.node.node_type }}">
+                            {% if reading.node.node_type == 'env' %}🌡️{% else %}💧{% endif %}
+                            {{ reading.node.name }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if reading.temperature is not None %}
+                            <span class="value-cell">{{ reading.temperature }} °C</span>
+                        {% else %}
+                            <span class="value-cell value-muted">--</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if reading.humidity is not None %}
+                            <span class="value-cell">{{ reading.humidity }} %</span>
+                        {% else %}
+                            <span class="value-cell value-muted">--</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if reading.soil_moisture is not None %}
+                            {% if reading.soil_moisture >= 16 %}
+                                <span class="value-cell value-optimal">{{ reading.soil_moisture }} % <i class="fas fa-check-circle"></i></span>
+                            {% elif reading.soil_moisture >= 10 %}
+                                <span class="value-cell value-stress">{{ reading.soil_moisture }} % <i class="fas fa-exclamation-circle"></i></span>
+                            {% else %}
+                                <span class="value-cell value-critical">{{ reading.soil_moisture }} % <i class="fas fa-exclamation-triangle"></i></span>
+                            {% endif %}
+                        {% else %}
+                            <span class="value-cell value-muted">--</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if reading.salinity is not None %}
+                            <span class="value-cell">{{ reading.salinity }} dS/m</span>
+                        {% else %}
+                            <span class="value-cell value-muted">--</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if page_obj.has_other_pages %}
+    <div class="sh-pagination">
+        {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}{% if selected_node_id %}&node={{ selected_node_id }}{% endif %}" class="sh-page-btn">
+            <i class="fas fa-chevron-left"></i> Previous
+        </a>
+        {% endif %}
+        <span class="sh-page-info">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}{% if selected_node_id %}&node={{ selected_node_id }}{% endif %}" class="sh-page-btn">
+            Next <i class="fas fa-chevron-right"></i>
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="empty-state">
+        <i class="fas fa-microchip"></i>
+        <h5>No sensor data yet</h5>
+        <p>Readings will appear here once your sensors start sending data.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

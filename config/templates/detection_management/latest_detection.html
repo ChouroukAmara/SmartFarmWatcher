@@ -1,0 +1,825 @@
+{% extends "dashboard/dashboard_base.html" %}
+
+{% block title %}Latest Detection{% endblock %}
+
+{% block nav_latest_detection %}active{% endblock %}
+
+{% block extra_css %}
+<style>
+        :root {
+            --fire-color: #ff5722 !important;
+            --person-color: #2196F3 !important;
+            --smoke-color: #9E9E9E !important;
+        }
+        
+        .welcome-card {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            color: white;
+            border-radius: 20px;
+            padding: 35px;
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .welcome-card::before {
+            content: '';
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            width: 200px;
+            height: 200px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+        }
+
+        /* Simplified Filter Styles - No Card, Icon Left */
+        .filter-section-inline {
+            margin-left: auto;
+        }
+
+        .project-filter-inline {
+            padding: 12px 16px;
+            border: 2px solid #e8ecef;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            background: white;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            min-width: 220px;
+            color: #2c3e50;
+        }
+
+        .project-filter-inline:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.12);
+        }
+
+        .project-filter-inline:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-1px);
+        }
+
+        .filter-icon {
+            color: #6c757d;
+            font-size: 16px;
+            margin-right: 8px;
+        }
+
+        .clear-filter-btn-inline {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(220, 53, 69, 0.2);
+        }
+
+        .clear-filter-btn-inline:hover {
+            background: linear-gradient(135deg, #c82333, #bd2130);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+            color: white;
+            text-decoration: none;
+        }
+
+        .detections-header-left {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        /* Updated Stats Grid - Dashboard Style */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border: none;
+            transition: all 0.3s ease;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card.total::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(135deg, var(--primary-color), #45a049);
+        }
+
+        .stat-card.fire::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(135deg, var(--fire-color), #e64a19);
+        }
+
+        .stat-card.person::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(135deg, var(--person-color), #1976D2);
+        }
+
+        .stat-card.smoke::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(135deg, var(--smoke-color), #757575);
+        }
+
+        .stat-card.cameras::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(135deg, var(--warning-color), #e0a800);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-icon {
+            width: 65px;
+            height: 65px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        .stat-icon.total { background: linear-gradient(135deg, var(--primary-color), #45a049); }
+        .stat-icon.fire { background: linear-gradient(135deg, var(--fire-color), #e64a19); }
+        .stat-icon.person { background: linear-gradient(135deg, var(--person-color), #1976D2); }
+        .stat-icon.smoke { background: linear-gradient(135deg, var(--smoke-color), #757575); }
+        .stat-icon.cameras { background: linear-gradient(135deg, var(--warning-color), #e0a800); }
+
+        .stat-number {
+            font-size: 2.8rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin: 0;
+            line-height: 1;
+        }
+
+        .stat-label {
+            color: #6c757d;
+            font-size: 14px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 8px;
+        }
+
+        /* Debug styles for smoke icon */
+        .smoke-icon-debug {
+            background: var(--smoke-color) !important;
+            color: white !important;
+            border: 2px solid #333 !important;
+        }
+
+        /* Fallback for missing icons */
+        .icon-fallback::before {
+            content: "💨" !important;
+            font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
+            font-size: 24px !important;
+        }
+        
+        .detections-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+        
+        .detection-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+        
+        .detection-card:hover {
+            transform: translateY(-2px);
+        }
+        
+        .detection-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+        
+        .detection-info {
+            padding: 20px;
+        }
+        
+        .detection-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .camera-name {
+            font-weight: 600;
+            color: #2c3e50;
+            margin: 0;
+        }
+        
+        .detection-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            color: white;
+        }
+        
+        .detection-badge.fire {
+            background: var(--fire-color);
+        }
+        
+        .detection-badge.person {
+            background: var(--person-color);
+        }
+
+        .detection-badge.smoke {
+            background: var(--smoke-color);
+        }
+        
+        .detection-meta {
+            font-size: 14px;
+            color: #6c757d;
+            margin-bottom: 10px;
+        }
+        
+        .confidence-bar {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 15px;
+            position: relative;
+        }
+        
+        .confidence-fill {
+            height: 100%;
+            transition: width 0.3s ease;
+            min-width: 2px;
+            max-width: 100%;
+        }
+        
+        .confidence-fill.fire {
+            background: var(--fire-color);
+        }
+        
+        .confidence-fill.person {
+            background: var(--person-color);
+        }
+
+        .confidence-fill.smoke {
+            background: var(--smoke-color);
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn-sm {
+            padding: 5px 12px;
+            font-size: 12px;
+        }
+
+        /* Loading state for false positive button */
+        .toggle-false-positive.loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+        
+        .toggle-false-positive.loading i {
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+        
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            color: #dee2e6;
+        }
+        
+        /* Floating Action Button for Refresh */
+        .fab {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+            border: none;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            cursor: pointer;
+        }
+
+        .fab:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+            color: white;
+        }
+
+        .fab:active {
+            transform: translateY(-1px);
+        }
+
+        @media (max-width: 768px) {
+            .detections-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .fab {
+                bottom: 20px;
+                right: 20px;
+                width: 48px;
+                height: 48px;
+                font-size: 18px;
+            }
+
+            /* Mobile adjustments for inline filter */
+            .mb-4.d-flex {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .filter-section-inline {
+                min-width: 100%;
+            }
+
+            .project-filter-inline {
+                min-width: 100%;
+            }
+
+            .detections-header-left h4 {
+                font-size: 1.2rem;
+            }
+        }
+
+        /* Camera Status Dot Styles */
+.camera-status-dot {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-left: 8px;
+    position: relative;
+    animation: pulse 2s infinite;
+}
+
+.camera-status-dot.online {
+    background-color: #4CAF50;
+    box-shadow: 0 0 6px rgba(76, 175, 80, 0.6);
+}
+
+.camera-status-dot.offline {
+    background-color: #f44336;
+    box-shadow: 0 0 6px rgba(244, 67, 54, 0.6);
+    animation: pulse-red 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 6px rgba(76, 175, 80, 0.6);
+    }
+    50% {
+        box-shadow: 0 0 12px rgba(76, 175, 80, 0.8), 0 0 18px rgba(76, 175, 80, 0.4);
+    }
+    100% {
+        box-shadow: 0 0 6px rgba(76, 175, 80, 0.6);
+    }
+}
+
+@keyframes pulse-red {
+    0% {
+        box-shadow: 0 0 6px rgba(244, 67, 54, 0.6);
+    }
+    50% {
+        box-shadow: 0 0 12px rgba(244, 67, 54, 0.8), 0 0 18px rgba(244, 67, 54, 0.4);
+    }
+    100% {
+        box-shadow: 0 0 6px rgba(244, 67, 54, 0.6);
+    }
+}
+
+.camera-status-text {
+    font-size: 11px;
+    color: #6c757d;
+    margin-left: 4px;
+}
+
+.camera-status-text.online {
+    color: #4CAF50;
+}
+
+.camera-status-text.offline {
+    color: #f44336;
+}
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="welcome-card">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="mb-2">Latest Detection</h1>
+                <p class="mb-0 opacity-75">
+                    Monitor AI detections across all your farm cameras
+                    {% if selected_project %}
+                        <br><small>Showing results for: {{ selected_project.name }}</small>
+                    {% endif %}
+                </p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <div class="d-flex align-items-center justify-content-md-end">
+                    <i class="fas fa-exclamation-triangle fa-3x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics with Dashboard Style -->
+    <div class="stats-grid">
+        <div class="stat-card total">
+            <div class="stat-icon total">
+                <i class="fas fa-eye"></i>
+            </div>
+            <h3 class="stat-number">{{ stats.total_detections }}</h3>
+            <p class="stat-label">Total Detections</p>
+        </div>
+        <div class="stat-card fire">
+            <div class="stat-icon fire">
+                <i class="fas fa-fire"></i>
+            </div>
+            <h3 class="stat-number">{{ stats.fire_detections }}</h3>
+            <p class="stat-label">Fire Detections</p>
+        </div>
+        <div class="stat-card person">
+            <div class="stat-icon person">
+                <i class="fas fa-user"></i>
+            </div>
+            <h3 class="stat-number">{{ stats.person_detections }}</h3>
+            <p class="stat-label">Person Detections</p>
+        </div>
+        <div class="stat-card smoke">
+            <div class="stat-icon smoke">
+                <i class="fas fa-smog"></i>
+            </div>
+            <h3 class="stat-number">{{ stats.smoke_detections }}</h3>
+            <p class="stat-label">Smoke Detections</p>
+        </div>
+    </div>
+
+    <!-- Latest Detections Header with Enhanced Filter -->
+    <div class="mb-4 d-flex justify-content-between align-items-start flex-wrap">
+        <div class="detections-header-left">
+            <h4 style="color: var(--primary-color)" class="mb-2">
+                <i class="fas fa-clock" style="color: var(--primary-color);"></i> 
+                Latest Detections by Camera
+            </h4>
+            <p class="text-muted mb-0">
+                Most recent detection from each camera
+                {% if selected_project %}
+                    in {{ selected_project.name }}
+                {% endif %}
+            </p>
+        </div>
+        
+        <!-- Simplified Project Filter - Very Right Side -->
+        <div class="filter-section-inline">
+            <form method="GET" id="project-filter-form" class="d-flex align-items-center gap-2">
+                <i class="fas fa-filter filter-icon"></i>
+                <select name="project" id="project-filter" class="project-filter-inline" onchange="this.form.submit()">
+                    <option value="">All Projects</option>
+                    {% for project in user_projects %}
+                        <option value="{{ project.id }}" 
+                                {% if selected_project and selected_project.id == project.id %}selected{% endif %}>
+                            {{ project.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+                {% if selected_project %}
+                    <a href="?" class="clear-filter-btn-inline" title="Clear Filter">
+                        <i class="fas fa-times"></i>
+                    </a>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+
+    {% if latest_detections %}
+    <div class="detections-grid">
+        {% for item in latest_detections %}
+        <div class="detection-card">
+            {% if item.detection.image_annotated %}
+            <img src="{{ item.detection.image_annotated.url }}" 
+                 alt="Detection from Camera #{{ item.camera.id }}" 
+                 class="detection-image">
+            {% endif %}
+            
+            <div class="detection-info">
+                <div class="detection-header">
+                    <h5 class="camera-name">
+                        Camera #{{ item.camera.id }}
+                        <span class="camera-status-dot {% if item.camera.heartbeat_check %}online{% else %}offline{% endif %}" 
+                            title="{% if item.camera.heartbeat_check %}Camera Online{% else %}Camera Offline{% endif %}">
+                        </span>
+                        <span class="camera-status-text {% if item.camera.heartbeat_check %}online{% else %}offline{% endif %}">
+                            {% if item.camera.heartbeat_check %}Online{% else %}Offline{% endif %}
+                        </span>
+                    </h5>
+                    <span class="detection-badge {{ item.detection.detection_type.name }}">
+                        {% if item.detection.detection_type.name == 'fire' %}
+                            <i class="fas fa-fire"></i>
+                        {% elif item.detection.detection_type.name == 'person' %}
+                            <i class="fas fa-user"></i>
+                        {% elif item.detection.detection_type.name == 'smoke' %}
+                            <i class="fas fa-smog"></i>
+                        {% endif %}
+                        {{ item.detection.detection_type.name|capfirst }}
+                    </span>
+                </div>
+                
+                <div class="detection-meta">
+                    <i class="fas fa-map-marker-alt"></i> {{ item.project.name }}
+                    {% if item.camera.farm_boundary %}
+                    - Farm Boundary #{{ item.camera.farm_boundary.id }}
+                    {% endif %}
+                </div>
+                
+                <div class="detection-meta">
+                    <i class="fas fa-clock"></i> {{ item.detection.detected_at|date:"M d, Y H:i" }}
+                </div>
+                
+                <div class="mb-2">
+                    <small class="text-muted">Confidence: {{ item.detection.confidence_percentage|floatformat:0 }}%</small>
+                    <div class="confidence-bar">
+                        <div class="confidence-fill {{ item.detection.detection_type.name }}" 
+                             style="width: {{ item.detection.confidence_percentage|floatformat:0 }}%"></div>
+                    </div>
+                </div>
+                
+                <div class="action-buttons">
+                    <a href="/detection/camera/{{ item.camera.id }}/" class="btn btn-primary btn-sm">
+                        <i class="fas fa-eye"></i> View All
+                    </a>
+                    <button class="btn {% if item.detection.is_false_positive %}btn-outline-success{% else %}btn-outline-warning{% endif %} btn-sm toggle-false-positive" 
+                            data-detection-id="{{ item.detection.id }}"
+                            data-is-false="{{ item.detection.is_false_positive }}">
+                        {% if item.detection.is_false_positive %}
+                            <i class="fas fa-check-circle"></i> Un-flag
+                        {% else %}
+                            <i class="fas fa-flag"></i> False Positive
+                        {% endif %}
+                    </button>
+                    {% if item.detection.image_original %}
+                    <a href="{{ item.detection.image_original.url }}" target="_blank" 
+                       class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-download"></i> Original
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <!-- Empty State -->
+    <div class="empty-state">
+        <i class="fas fa-search"></i>
+        <h3>No Detections Found</h3>
+        <p>
+            {% if selected_project %}
+                No AI detections have been recorded from cameras in {{ selected_project.name }} yet.
+            {% else %}
+                No AI detections have been recorded from your cameras yet.
+            {% endif %}
+        </p>
+    </div>
+    {% endif %}
+
+    <!-- Floating Action Button for Refresh -->
+    <button class="fab" onclick="location.reload()">
+        <i class="fas fa-sync-alt"></i>
+    </button>
+{% endblock %}
+
+{% block extra_js %}
+{% csrf_token %}
+<script>
+    // Get CSRF token
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
+                      document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+    // Send heartbeat to camera endpoint
+    function sendHeartbeat() {
+        fetch('/projects/camera/heartbeat/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                console.log('Heartbeat sent successfully');
+            } else {
+                console.warn('Heartbeat failed:', response.status);
+            }
+        })
+        .catch(error => {
+            console.error('Heartbeat error:', error);
+        });
+    }
+
+    // Handle false positive toggle
+    document.querySelectorAll('.toggle-false-positive').forEach(button => {
+        button.addEventListener('click', function() {
+            const detectionId = this.dataset.detectionId;
+            const isFalse = this.dataset.isFalse === 'true';
+            const btn = this;
+            
+            // Add loading state
+            btn.classList.add('loading');
+            btn.disabled = true;
+            
+            fetch(`/detection/mark-false-positive/${detectionId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    'is_false_positive': !isFalse
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    // Show success message
+                    if (typeof showToast === 'function') {
+                        showToast('Detection status updated successfully', 'success');
+                    }
+                    
+                    // Update button state immediately
+                    const newIsFalse = !isFalse;
+                    btn.dataset.isFalse = newIsFalse.toString();
+                    
+                    // Update button appearance and text
+                    if (newIsFalse) {
+                        // Now false positive - show check button (green)
+                        btn.className = 'btn btn-sm toggle-false-positive btn-outline-success';
+                        btn.innerHTML = '<i class="fas fa-check-circle"></i> Un-flag';
+                        btn.title = 'Mark as Valid';
+                    } else {
+                        // Now valid - show flag button (warning outline)
+                        btn.className = 'btn btn-sm toggle-false-positive btn-outline-warning';
+                        btn.innerHTML = '<i class="fas fa-flag"></i> False Positive';
+                        btn.title = 'Mark as False Positive';
+                    }
+                    
+                    // Remove loading state
+                    btn.classList.remove('loading');
+                    btn.disabled = false;
+                    
+                } else {
+                    throw new Error(data.message || 'Unknown error occurred');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                
+                // Show error message
+                if (typeof showToast === 'function') {
+                    showToast('Error updating detection status: ' + error.message, 'error');
+                } else {
+                    alert('Error updating detection status: ' + error.message);
+                }
+                
+                // Remove loading state
+                btn.classList.remove('loading');
+                btn.disabled = false;
+            });
+        });
+    });
+
+    // Auto-refresh every 30 seconds - preserve current filter
+    setInterval(() => {
+        const refreshBtn = document.querySelector('.fab');
+        if (refreshBtn) {
+            // Just make the icon spin, no text change
+            refreshBtn.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i>';
+            setTimeout(() => {
+                // Send heartbeat before reload
+                sendHeartbeat();
+                // Small delay to ensure heartbeat is sent
+                setTimeout(() => {
+                    location.reload();
+                }, 200);
+            }, 1000);
+        }
+    }, 30000);
+
+    // Send heartbeat on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        // Send heartbeat when page loads
+        sendHeartbeat();
+        
+        // Add animation on load - same as dashboard
+        const cards = document.querySelectorAll('.stat-card, .detection-card');
+        cards.forEach((card, index) => {
+            setTimeout(() => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                
+                setTimeout(() => {
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, 100);
+            }, index * 100);
+        });
+    });
+
+    // Send heartbeat when page is about to unload (optional)
+    window.addEventListener('beforeunload', function() {
+        // Use sendBeacon for better reliability during page unload
+        if (navigator.sendBeacon) {
+            const formData = new FormData();
+            formData.append('csrfmiddlewaretoken', csrfToken);
+            navigator.sendBeacon('/projects/camera/heartbeat/', formData);
+        }
+    });
+</script>
+{% endblock %}

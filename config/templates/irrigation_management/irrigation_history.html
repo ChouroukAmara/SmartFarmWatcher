@@ -1,0 +1,232 @@
+{% extends "dashboard/dashboard_base.html" %}
+
+{% block title %}Irrigation History{% endblock %}
+
+{% block extra_css %}
+<style>
+    .welcome-card {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+        color: white;
+        border-radius: 20px;
+        padding: 35px;
+        margin-bottom: 30px;
+        position: relative;
+        overflow: hidden;
+    }
+    .welcome-card::before {
+        content: '';
+        position: absolute;
+        top: -50px; right: -50px;
+        width: 200px; height: 200px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 50%;
+    }
+
+    .search-section {
+        background: white;
+        padding: 20px 25px;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        margin: 0 auto 25px auto;
+        max-width: 500px;
+    }
+
+    .projects-table {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        overflow: hidden;
+    }
+    .table { margin: 0; }
+    .table th {
+        background: #f8f9fa;
+        border: none;
+        font-weight: 600;
+        color: #495057;
+        padding: 15px;
+    }
+    .table td {
+        padding: 15px;
+        vertical-align: middle;
+        border-top: 1px solid #e9ecef;
+    }
+
+    .status-badge {
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+    .status-danger  { background: #f8d7da; color: #721c24; }
+    .status-warning { background: #fff3cd; color: #856404; }
+    .status-info    { background: #d1ecf1; color: #0c5460; }
+    .status-success { background: #d4edda; color: #155724; }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #6c757d;
+    }
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 20px;
+        color: #dee2e6;
+    }
+
+    .pagination { justify-content: center; margin-top: 30px; }
+    .pagination .page-link {
+        color: var(--primary-color);
+        border-color: #dee2e6;
+    }
+    .pagination .page-item.active .page-link {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+    }
+
+    @media (max-width: 768px) {
+        .table-responsive { font-size: 14px; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Welcome Card -->
+<div class="welcome-card">
+    <div class="row align-items-center">
+        <div class="col-md-8">
+            <h1 class="mb-2" style="color: var(--primary-color);">Irrigation Estimation History</h1>
+            <p class="mb-0 opacity-75">
+                Track irrigation recommendations across your projects over time.
+            </p>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <i class="fas fa-tint fa-3x opacity-50"></i>
+        </div>
+    </div>
+</div>
+
+<!-- Filter -->
+<div class="search-section">
+    <form method="get">
+        <label class="form-label">Filter by Project</label>
+        <select name="project" class="form-select" onchange="this.form.submit()">
+            <option value="">All Projects</option>
+            {% for project in projects %}
+              <option value="{{ project.id }}" {% if project.id == selected_project_id %}selected{% endif %}>
+                {{ project.name }}
+              </option>
+            {% endfor %}
+        </select>
+    </form>
+</div>
+
+<!-- Table -->
+<div class="projects-table">
+    {% if page_obj %}
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Project</th>
+                    <th>Crop</th>
+                    <th>Stage</th>
+                    <th>Rainfall (mm)</th>
+                    <th>ECw (dS/m)</th>
+                    <th>Salinity Risk</th>
+                    <th>Soil Moisture (%)</th>
+                    <th>AI Requirement (mm)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in page_obj %}
+                <tr>
+                    <td>
+                        {{ log.computed_at|date:"M d, Y" }}
+                        <br>
+                        <small class="text-muted">{{ log.computed_at|time:"H:i" }}</small>
+                    </td>
+                    <td>{{ log.project.name }}</td>
+                    <td>{{ log.project.crop.crop_name|default:"--" }}</td>
+                    <td>{{ log.project.current_stage|default:"--" }}</td>
+                    <td>{{ log.rainfall_mm }}</td>
+                    <td>{{ log.ecw_dSm }}</td>
+                    <td>
+                        <span class="status-badge
+                            {% if log.salinity_risk == 'high' %}status-danger
+                            {% elif log.salinity_risk == 'medium' %}status-warning
+                            {% elif log.salinity_risk == 'low' %}status-info
+                            {% else %}status-success{% endif %}">
+                            {{ log.salinity_risk|capfirst }}
+                        </span>
+                    </td>
+                    <td>{{ log.soil_moisture|default:"--" }}</td>
+                    <td><strong>{{ log.b_totaux_ml|default:"--" }}</strong></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <nav aria-label="Irrigation history pagination" style="padding-bottom: 25px;">
+        <ul class="pagination">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page=1{% if selected_project_id %}&project={{ selected_project_id }}{% endif %}">First</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if selected_project_id %}&project={{ selected_project_id }}{% endif %}">Previous</a>
+            </li>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ num }}{% if selected_project_id %}&project={{ selected_project_id }}{% endif %}">{{ num }}</a>
+            </li>
+            {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if selected_project_id %}&project={{ selected_project_id }}{% endif %}">Next</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if selected_project_id %}&project={{ selected_project_id }}{% endif %}">Last</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+
+    {% else %}
+    <div class="empty-state">
+        <i class="fas fa-tint"></i>
+        <h3>No Irrigation Records Found</h3>
+        <p>No irrigation estimations have been recorded yet.</p>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('tbody tr').forEach((row, i) => {
+            row.style.opacity = '0';
+            row.style.transform = 'translateY(10px)';
+            row.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+            setTimeout(() => {
+                row.style.opacity = '1';
+                row.style.transform = 'translateY(0)';
+            }, i * 50 + 100);
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,677 @@
+[
+  {
+    "model": "project_management.cropcoefficient",
+    "pk": 1,
+    "fields": {
+      "crop_name": "Tomato",
+      "kc_ini": 0.6,
+      "kc_mid": 1.15,
+      "kc_end": 0.8,
+      "days_ini": 30,
+      "days_dev": 40,
+      "days_mid": 40,
+      "days_end": 25,
+      "ece_threshold": 2.5
+    }
+  },
+  {
+    "model": "project_management.cropcoefficient",
+    "pk": 2,
+    "fields": {
+      "crop_name": "Potato",
+      "kc_ini": 0.5,
+      "kc_mid": 1.15,
+      "kc_end": 0.75,
+      "days_ini": 25,
+      "days_dev": 30,
+      "days_mid": 45,
+      "days_end": 30,
+      "ece_threshold": 1.7
+    }
+  },
+  {
+    "model": "project_management.cropcoefficient",
+    "pk": 3,
+    "fields": {
+      "crop_name": "Onion",
+      "kc_ini": 0.7,
+      "kc_mid": 1.05,
+      "kc_end": 0.75,
+      "days_ini": 15,
+      "days_dev": 25,
+      "days_mid": 70,
+      "days_end": 40,
+      "ece_threshold": 1.2
+    }
+  },
+  {
+    "model": "project_management.cropcoefficient",
+    "pk": 4,
+    "fields": {
+      "crop_name": "Carrot",
+      "kc_ini": 0.7,
+      "kc_mid": 1.05,
+      "kc_end": 0.95,
+      "days_ini": 20,
+      "days_dev": 30,
+      "days_mid": 50,
+      "days_end": 20,
+      "ece_threshold": 1.0
+    }
+  },
+  {
+    "model": "project_management.cropcoefficient",
+    "pk": 5,
+    "fields": {
+      "crop_name": "Lettuce",
+      "kc_ini": 0.7,
+      "kc_mid": 1.0,
+      "kc_end": 0.95,
+      "days_ini": 20,
+      "days_dev": 30,
+      "days_mid": 15,
+      "days_end": 10,
+      "ece_threshold": 1.3
+    }
+  },
+  {
+    "model": "project_management.cropcoefficient",
+    "pk": 6,
+    "fields": {
+      "crop_name": "Bell Pepper",
+      "kc_ini": 0.6,
+      "kc_mid": 1.05,
+      "kc_end": 0.9,
+      "days_ini": 30,
+      "days_dev": 40,
+      "days_mid": 110,
+      "days_end": 30,
+      "ece_threshold": 1.5
+    }
+  },
+  {
+    "model": "project_management.cropcoefficient",
+    "pk": 7,
+    "fields": {
+      "crop_name": "Eggplant",
+      "kc_ini": 0.6,
+      "kc_mid": 1.05,
+      "kc_end": 0.9,
+      "days_ini": 30,
+      "days_dev": 45,
+      "days_mid": 40,
+      "days_end": 25,
+      "ece_threshold": 1.1
+    }
+  },
+  {
+    "model": "project_management.cropcoefficient",
+    "pk": 8,
+    "fields": {
+      "crop_name": "Cucumber",
+      "kc_ini": 0.6,
+      "kc_mid": 1.0,
+      "kc_end": 0.75,
+      "days_ini": 20,
+      "days_dev": 30,
+      "days_mid": 40,
+      "days_end": 15,
+      "ece_threshold": 2.5
+    }
+  },
+  {
+    "model": "project_management.cropcoefficient",
+    "pk": 9,
+    "fields": {
+      "crop_name": "Zucchini",
+      "kc_ini": 0.5,
+      "kc_mid": 0.95,
+      "kc_end": 0.75,
+      "days_ini": 25,
+      "days_dev": 35,
+      "days_mid": 25,
+      "days_end": 15,
+      "ece_threshold": 2.5
+    }
+  },
+  {
+    "model": "project_management.cropcoefficient",
+    "pk": 10,
+    "fields": {
+      "crop_name": "Green Bean",
+      "kc_ini": 0.4,
+      "kc_mid": 1.05,
+      "kc_end": 0.9,
+      "days_ini": 20,
+      "days_dev": 30,
+      "days_mid": 30,
+      "days_end": 10,
+      "ece_threshold": 1.0
+    }
+  },
+  {
+    "model": "project_management.cropcoefficient",
+    "pk": 11,
+    "fields": {
+      "crop_name": "Watermelon",
+      "kc_ini": 0.4,
+      "kc_mid": 1.0,
+      "kc_end": 0.75,
+      "days_ini": 20,
+      "days_dev": 30,
+      "days_mid": 30,
+      "days_end": 30,
+      "ece_threshold": 2.0
+    }
+  },
+  {
+    "model": "project_management.cropcoefficient",
+    "pk": 12,
+    "fields": {
+      "crop_name": "Melon",
+      "kc_ini": 0.5,
+      "kc_mid": 1.05,
+      "kc_end": 0.75,
+      "days_ini": 25,
+      "days_dev": 35,
+      "days_mid": 40,
+      "days_end": 20,
+      "ece_threshold": 2.2
+    }
+  },
+  {
+    "model": "project_management.cropcoefficient",
+    "pk": 13,
+    "fields": {
+      "crop_name": "Wheat",
+      "kc_ini": 0.3,
+      "kc_mid": 1.15,
+      "kc_end": 0.25,
+      "days_ini": 20,
+      "days_dev": 30,
+      "days_mid": 60,
+      "days_end": 40,
+      "ece_threshold": 6.0
+    }
+  },
+  {
+    "model": "project_management.cropcoefficient",
+    "pk": 14,
+    "fields": {
+      "crop_name": "Barley",
+      "kc_ini": 0.3,
+      "kc_mid": 1.15,
+      "kc_end": 0.25,
+      "days_ini": 15,
+      "days_dev": 25,
+      "days_mid": 50,
+      "days_end": 30,
+      "ece_threshold": 8.0
+    }
+  },
+  {
+    "model": "project_management.cropcoefficient",
+    "pk": 15,
+    "fields": {
+      "crop_name": "Maize (Corn)",
+      "kc_ini": 0.3,
+      "kc_mid": 1.2,
+      "kc_end": 0.35,
+      "days_ini": 20,
+      "days_dev": 35,
+      "days_mid": 40,
+      "days_end": 30,
+      "ece_threshold": 1.7
+    }
+  },
+  {
+    "model": "project_management.cropcoefficient",
+    "pk": 16,
+    "fields": {
+      "crop_name": "Olive Tree",
+      "kc_ini": 0.65,
+      "kc_mid": 0.7,
+      "kc_end": 0.7,
+      "days_ini": 30,
+      "days_dev": 90,
+      "days_mid": 60,
+      "days_end": 90,
+      "ece_threshold": 2.7
+    }
+  },
+  {
+    "model": "project_management.cropcoefficient",
+    "pk": 17,
+    "fields": {
+      "crop_name": "Grapevine",
+      "kc_ini": 0.3,
+      "kc_mid": 0.85,
+      "kc_end": 0.45,
+      "days_ini": 20,
+      "days_dev": 40,
+      "days_mid": 120,
+      "days_end": 60,
+      "ece_threshold": 1.5
+    }
+  },
+  {
+    "model": "project_management.cropcoefficient",
+    "pk": 18,
+    "fields": {
+      "crop_name": "Citrus",
+      "kc_ini": 0.75,
+      "kc_mid": 0.7,
+      "kc_end": 0.7,
+      "days_ini": 60,
+      "days_dev": 90,
+      "days_mid": 120,
+      "days_end": 95,
+      "ece_threshold": 1.7
+    }
+  },
+  {
+    "model": "project_management.cropcoefficient",
+    "pk": 19,
+    "fields": {
+      "crop_name": "Pomegranate",
+      "kc_ini": 0.6,
+      "kc_mid": 1.05,
+      "kc_end": 0.65,
+      "days_ini": 30,
+      "days_dev": 40,
+      "days_mid": 120,
+      "days_end": 30,
+      "ece_threshold": 4.5
+    }
+  },
+  {
+    "model": "project_management.cropcoefficient",
+    "pk": 20,
+    "fields": {
+      "crop_name": "Durum Wheat",
+      "kc_ini": 0.3,
+      "kc_mid": 1.15,
+      "kc_end": 0.25,
+      "days_ini": 20,
+      "days_dev": 30,
+      "days_mid": 60,
+      "days_end": 40,
+      "ece_threshold": 5.9
+    }
+  },
+  {
+    "model": "project_management.cropcoefficient",
+    "pk": 21,
+    "fields": {
+      "crop_name": "Broad Bean",
+      "kc_ini": 0.5,
+      "kc_mid": 1.15,
+      "kc_end": 1.1,
+      "days_ini": 15,
+      "days_dev": 25,
+      "days_mid": 35,
+      "days_end": 15,
+      "ece_threshold": 1.5
+    }
+  },
+  {
+    "model": "project_management.cropcoefficient",
+    "pk": 22,
+    "fields": {
+      "crop_name": "Chickpea",
+      "kc_ini": 0.4,
+      "kc_mid": 1.0,
+      "kc_end": 0.35,
+      "days_ini": 20,
+      "days_dev": 30,
+      "days_mid": 35,
+      "days_end": 20,
+      "ece_threshold": 3.0
+    }
+  },
+  {
+    "model": "project_management.cropcoefficient",
+    "pk": 23,
+    "fields": {
+      "crop_name": "Sunflower",
+      "kc_ini": 0.35,
+      "kc_mid": 1.1,
+      "kc_end": 0.35,
+      "days_ini": 25,
+      "days_dev": 35,
+      "days_mid": 45,
+      "days_end": 25,
+      "ece_threshold": 4.8
+    }
+  },
+  {
+    "model": "project_management.cropcoefficient",
+    "pk": 24,
+    "fields": {
+      "crop_name": "Soybean",
+      "kc_ini": 0.4,
+      "kc_mid": 1.15,
+      "kc_end": 0.5,
+      "days_ini": 20,
+      "days_dev": 30,
+      "days_mid": 60,
+      "days_end": 25,
+      "ece_threshold": 5.0
+    }
+  },
+  {
+    "model": "project_management.cropcoefficient",
+    "pk": 25,
+    "fields": {
+      "crop_name": "Mint",
+      "kc_ini": 0.6,
+      "kc_mid": 1.1,
+      "kc_end": 1.05,
+      "days_ini": 15,
+      "days_dev": 25,
+      "days_mid": 35,
+      "days_end": 10,
+      "ece_threshold": 2.0
+    }
+  },
+  {
+    "model": "project_management.cropcoefficient",
+    "pk": 26,
+    "fields": {
+      "crop_name": "Date Palm",
+      "kc_ini": 0.9,
+      "kc_mid": 1.05,
+      "kc_end": 0.95,
+      "days_ini": 30,
+      "days_dev": 60,
+      "days_mid": 150,
+      "days_end": 60,
+      "ece_threshold": 18.0
+    }
+  },
+  {
+    "model": "project_management.cropcoefficient",
+    "pk": 27,
+    "fields": {
+      "crop_name": "Fig Tree",
+      "kc_ini": 0.6,
+      "kc_mid": 1.05,
+      "kc_end": 0.7,
+      "days_ini": 30,
+      "days_dev": 50,
+      "days_mid": 100,
+      "days_end": 30,
+      "ece_threshold": 2.7
+    }
+  },
+  {
+    "model": "project_management.cropcoefficient",
+    "pk": 28,
+    "fields": {
+      "crop_name": "Apricot Tree",
+      "kc_ini": 0.55,
+      "kc_mid": 1.0,
+      "kc_end": 0.65,
+      "days_ini": 20,
+      "days_dev": 40,
+      "days_mid": 60,
+      "days_end": 30,
+      "ece_threshold": 1.6
+    }
+  },
+  {
+    "model": "project_management.cropcoefficient",
+    "pk": 29,
+    "fields": {
+      "crop_name": "Almond Tree",
+      "kc_ini": 0.6,
+      "kc_mid": 0.9,
+      "kc_end": 0.65,
+      "days_ini": 20,
+      "days_dev": 70,
+      "days_mid": 90,
+      "days_end": 30,
+      "ece_threshold": 1.5
+    }
+  },
+  {
+    "model": "project_management.cropcoefficient",
+    "pk": 30,
+    "fields": {
+      "crop_name": "Pistachio Tree",
+      "kc_ini": 0.6,
+      "kc_mid": 1.1,
+      "kc_end": 0.65,
+      "days_ini": 20,
+      "days_dev": 60,
+      "days_mid": 90,
+      "days_end": 30,
+      "ece_threshold": 2.7
+    }
+  },
+  {
+    "model": "project_management.cropcoefficient",
+    "pk": 31,
+    "fields": {
+      "crop_name": "Henna (Lawsonia)",
+      "kc_ini": 0.5,
+      "kc_mid": 0.95,
+      "kc_end": 0.7,
+      "days_ini": 25,
+      "days_dev": 35,
+      "days_mid": 60,
+      "days_end": 25,
+      "ece_threshold": 2.5
+    }
+  },
+  {
+    "model": "project_management.cropcoefficient",
+    "pk": 32,
+    "fields": {
+      "crop_name": "Cactus Pear (Prickly Pear)",
+      "kc_ini": 0.3,
+      "kc_mid": 0.6,
+      "kc_end": 0.5,
+      "days_ini": 30,
+      "days_dev": 60,
+      "days_mid": 120,
+      "days_end": 60,
+      "ece_threshold": 7.0
+    }
+  },
+  {
+    "model": "project_management.cropcoefficient",
+    "pk": 33,
+    "fields": {
+      "crop_name": "Sorghum",
+      "kc_ini": 0.3,
+      "kc_mid": 1.0,
+      "kc_end": 0.55,
+      "days_ini": 20,
+      "days_dev": 35,
+      "days_mid": 40,
+      "days_end": 30,
+      "ece_threshold": 6.8
+    }
+  },
+  {
+    "model": "project_management.cropcoefficient",
+    "pk": 34,
+    "fields": {
+      "crop_name": "Esparto Grass (Alfa)",
+      "kc_ini": 0.4,
+      "kc_mid": 0.85,
+      "kc_end": 0.6,
+      "days_ini": 30,
+      "days_dev": 60,
+      "days_mid": 90,
+      "days_end": 60,
+      "ece_threshold": 6.0
+    }
+  },
+  {
+    "model": "project_management.cropcoefficient",
+    "pk": 35,
+    "fields": {
+      "crop_name": "Rosemary",
+      "kc_ini": 0.4,
+      "kc_mid": 0.75,
+      "kc_end": 0.65,
+      "days_ini": 20,
+      "days_dev": 40,
+      "days_mid": 80,
+      "days_end": 30,
+      "ece_threshold": 3.0
+    }
+  },
+  {
+    "model": "project_management.cropcoefficient",
+    "pk": 36,
+    "fields": {
+      "crop_name": "Thyme",
+      "kc_ini": 0.4,
+      "kc_mid": 0.8,
+      "kc_end": 0.65,
+      "days_ini": 15,
+      "days_dev": 30,
+      "days_mid": 60,
+      "days_end": 20,
+      "ece_threshold": 3.0
+    }
+  },
+  {
+    "model": "project_management.cropcoefficient",
+    "pk": 37,
+    "fields": {
+      "crop_name": "Coriander",
+      "kc_ini": 0.6,
+      "kc_mid": 1.0,
+      "kc_end": 0.8,
+      "days_ini": 10,
+      "days_dev": 20,
+      "days_mid": 30,
+      "days_end": 15,
+      "ece_threshold": 2.0
+    }
+  },
+  {
+    "model": "project_management.cropcoefficient",
+    "pk": 38,
+    "fields": {
+      "crop_name": "Fennel",
+      "kc_ini": 0.5,
+      "kc_mid": 1.0,
+      "kc_end": 0.8,
+      "days_ini": 15,
+      "days_dev": 25,
+      "days_mid": 40,
+      "days_end": 20,
+      "ece_threshold": 2.0
+    }
+  },
+  {
+    "model": "project_management.cropcoefficient",
+    "pk": 39,
+    "fields": {
+      "crop_name": "Oasis Turnip",
+      "kc_ini": 0.5,
+      "kc_mid": 1.05,
+      "kc_end": 0.95,
+      "days_ini": 15,
+      "days_dev": 25,
+      "days_mid": 35,
+      "days_end": 15,
+      "ece_threshold": 0.9
+    }
+  },
+  {
+    "model": "project_management.cropcoefficient",
+    "pk": 40,
+    "fields": {
+      "crop_name": "Harissa Pepper",
+      "kc_ini": 0.6,
+      "kc_mid": 1.05,
+      "kc_end": 0.9,
+      "days_ini": 30,
+      "days_dev": 40,
+      "days_mid": 110,
+      "days_end": 30,
+      "ece_threshold": 1.5
+    }
+  },
+  {
+    "model": "project_management.cropcoefficient",
+    "pk": 41,
+    "fields": {
+      "crop_name": "Acacia (Gum Arabic)",
+      "kc_ini": 0.35,
+      "kc_mid": 0.65,
+      "kc_end": 0.5,
+      "days_ini": 40,
+      "days_dev": 80,
+      "days_mid": 120,
+      "days_end": 80,
+      "ece_threshold": 4.0
+    }
+  },
+  {
+    "model": "project_management.cropcoefficient",
+    "pk": 42,
+    "fields": {
+      "crop_name": "Jujube Tree (Sidr)",
+      "kc_ini": 0.5,
+      "kc_mid": 0.9,
+      "kc_end": 0.65,
+      "days_ini": 25,
+      "days_dev": 50,
+      "days_mid": 90,
+      "days_end": 40,
+      "ece_threshold": 3.0
+    }
+  },
+  {
+    "model": "project_management.cropcoefficient",
+    "pk": 43,
+    "fields": {
+      "crop_name": "Tamarisk",
+      "kc_ini": 0.35,
+      "kc_mid": 0.7,
+      "kc_end": 0.55,
+      "days_ini": 30,
+      "days_dev": 60,
+      "days_mid": 100,
+      "days_end": 60,
+      "ece_threshold": 8.0
+    }
+  },
+  {
+    "model": "project_management.cropcoefficient",
+    "pk": 44,
+    "fields": {
+      "crop_name": "Moringa",
+      "kc_ini": 0.5,
+      "kc_mid": 1.0,
+      "kc_end": 0.75,
+      "days_ini": 20,
+      "days_dev": 40,
+      "days_mid": 60,
+      "days_end": 30,
+      "ece_threshold": 3.0
+    }
+  },
+  {
+    "model": "project_management.cropcoefficient",
+    "pk": 45,
+    "fields": {
+      "crop_name": "Quinoa",
+      "kc_ini": 0.35,
+      "kc_mid": 1.0,
+      "kc_end": 0.5,
+      "days_ini": 20,
+      "days_dev": 35,
+      "days_mid": 45,
+      "days_end": 25,
+      "ece_threshold": 40.0
+    }
+  }
+]

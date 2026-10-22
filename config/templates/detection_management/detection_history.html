@@ -1,0 +1,640 @@
+{% extends "dashboard/dashboard_base.html" %}
+
+{% block title %}Detection History{% endblock %}
+{% block nav_detections_history %}active{% endblock %}
+
+{% block extra_css %}
+<style>
+       :root {
+            --fire-color: #ff5722 !important;
+            --person-color: #2196F3 !important;
+            --smoke-color: #9E9E9E !important;
+        }
+        
+        .welcome-card {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+    color: white;
+    border-radius: 20px;
+    padding: 35px;
+    margin-bottom: 30px;
+    position: relative;
+    overflow: hidden;
+}
+
+.welcome-card::before {
+    content: '';
+    position: absolute;
+    top: -50px;
+    right: -50px;
+    width: 200px;
+    height: 200px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+}
+        
+        .search-section {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 25px;
+        }
+        
+        .detections-table {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .table {
+            margin: 0;
+        }
+        
+        .table th {
+            background: #f8f9fa;
+            border: none;
+            font-weight: 600;
+            color: #495057;
+            padding: 15px;
+        }
+        
+        .table td {
+            padding: 15px;
+            vertical-align: middle;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        .detection-thumbnail {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .detection-thumbnail:hover {
+            transform: scale(1.1);
+        }
+        
+        .detection-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            color: white;
+        }
+        
+        /* Updated detection badge colors including smoke */
+        .detection-badge.fire {
+            background: #ff5722 !important;
+        }
+        
+        .detection-badge.person {
+            background: #2196F3 !important;
+        }
+
+        .detection-badge.smoke {
+            background: #9E9E9E !important;
+        }
+        
+        .confidence-bar {
+            width: 100px;
+            height: 6px;
+            background: #e9ecef;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+        
+        .confidence-fill {
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+        
+        /* Updated confidence bar colors including smoke */
+        .confidence-fill.fire {
+            background: #ff5722 !important;
+        }
+        
+        .confidence-fill.person {
+            background: #2196F3 !important;
+        }
+
+        .confidence-fill.smoke {
+            background: #9E9E9E !important;
+        }
+        
+        .camera-info {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 4px;
+        }
+        
+        .project-info {
+            font-size: 13px;
+            color: #6c757d;
+        }
+        
+        .false-positive-badge {
+            background: #ffc107;
+            color: #212529;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+        
+        /* Loading state for false positive button */
+        .toggle-false-positive.loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+        
+        .toggle-false-positive.loading i {
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+        
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            color: #dee2e6;
+        }
+        
+        .pagination {
+            justify-content: center;
+            margin-top: 30px;
+        }
+        
+        .pagination .page-link {
+            color: var(--primary-color);
+            border-color: #dee2e6;
+        }
+        
+        /* Fix: Ensure active pagination item has white text */
+        .pagination .page-item.active .page-link {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white !important;
+        }
+        
+        .filter-badge {
+            background: var(--primary-color);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            margin-left: 5px;
+        }
+        
+        /* Modal styles */
+        .modal-image {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+        
+        @media (max-width: 768px) {
+            .table-responsive {
+                font-size: 14px;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .confidence-bar {
+                width: 60px;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+
+            <div class="welcome-card">
+    <div class="row align-items-center">
+        <div class="col-md-8">
+            <h1 class="mb-2">Detection History</h1>
+            <p class="mb-0 opacity-75">
+                Complete history of all AI detections from your farm cameras
+            </p>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <div class="d-flex align-items-center justify-content-md-end">
+                <i class="fas fa-history fa-3x opacity-50"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+            <!-- Search and Filters -->
+            <div class="search-section">
+                <form method="get" class="row align-items-end">
+                    <div class="col-md-4">
+                        <label class="form-label">Search</label>
+                        <input type="text" name="search" class="form-control" 
+                               placeholder="Search by project, camera..." 
+                               value="{{ search_query }}">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Detection Type</label>
+                        <select name="detection_type" class="form-select">
+                            <option value="">All Types</option>
+                            <option value="fire" {% if detection_type == 'fire' %}selected{% endif %}>Fire</option>
+                            <option value="person" {% if detection_type == 'person' %}selected{% endif %}>Person</option>
+                            <option value="smoke" {% if detection_type == 'smoke' %}selected{% endif %}>Smoke</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Status</label>
+                        <select name="status" class="form-select">
+                            <option value="">All Status</option>
+                            <option value="valid" {% if status == 'valid' %}selected{% endif %}>Valid</option>
+                            <option value="false_positive" {% if status == 'false_positive' %}selected{% endif %}>False Positive</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Date Range</label>
+                        <select name="date_range" class="form-select">
+                            <option value="">All Time</option>
+                            <option value="today" {% if date_range == 'today' %}selected{% endif %}>Today</option>
+                            <option value="week" {% if date_range == 'week' %}selected{% endif %}>This Week</option>
+                            <option value="month" {% if date_range == 'month' %}selected{% endif %}>This Month</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-search"></i> Search
+                        </button>
+                        {% if search_query or detection_type or status or date_range %}
+                        <a href="{% url 'detection_management:detection_history' %}" class="btn btn-outline-secondary w-100 mt-2">
+                            <i class="fas fa-times"></i> Clear
+                        </a>
+                        {% endif %}
+                    </div>
+                </form>
+            </div>
+
+            <!-- Active Filters Display -->
+            {% if search_query or detection_type or status or date_range %}
+            <div class="mb-3">
+                <small class="text-muted">Active filters:</small>
+                {% if search_query %}
+                    <span class="filter-badge">Search: {{ search_query }}</span>
+                {% endif %}
+                {% if detection_type %}
+                    <span class="filter-badge">Type: {{ detection_type|capfirst }}</span>
+                {% endif %}
+                {% if status %}
+                    <span class="filter-badge">Status: {{ status|capfirst }}</span>
+                {% endif %}
+                {% if date_range %}
+                    <span class="filter-badge">Date: {{ date_range|capfirst }}</span>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <!-- Detections Table -->
+            <div class="detections-table">
+                {% if page_obj %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Image</th>
+                                <th>Detection Type</th>
+                                <th>Camera & Project</th>
+                                <th>Confidence</th>
+                                <th>Date & Time</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for detection in page_obj %}
+                            <tr>
+                                <td>
+                                    {% if detection.image_annotated %}
+                                    <img src="{{ detection.image_annotated.url }}" 
+                                         alt="Detection" 
+                                         class="detection-thumbnail"
+                                         data-bs-toggle="modal" 
+                                         data-bs-target="#imageModal"
+                                         data-image-src="{{ detection.image_annotated.url }}"
+                                         data-detection-id="{{ detection.id }}">
+                                    {% else %}
+                                    <div class="detection-thumbnail bg-light d-flex align-items-center justify-content-center">
+                                        <i class="fas fa-image text-muted"></i>
+                                    </div>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="detection-badge {{ detection.detection_type.name }}">
+                                        {% if detection.detection_type.name == 'fire' %}
+                                            <i class="fas fa-fire"></i>
+                                        {% elif detection.detection_type.name == 'person' %}
+                                            <i class="fas fa-user"></i>
+                                        {% elif detection.detection_type.name == 'smoke' %}
+                                            <i class="fas fa-smog"></i>
+                                        {% endif %}
+                                        {{ detection.detection_type.name|capfirst }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="camera-info">
+                                        Camera #{{ detection.camera.id }}
+                                        {% if detection.camera.cellular_identifier %}
+                                            <br><small>{{ detection.camera.cellular_identifier }}</small>
+                                        {% elif detection.camera.ip_address %}
+                                            <br><small>{{ detection.camera.ip_address }}:{{ detection.camera.port }}</small>
+                                        {% endif %}
+                                    </div>
+                                    <div class="project-info">
+                                        <i class="fas fa-project-diagram"></i> {{ detection.camera.project.name }}
+                                        {% if detection.camera.farm_boundary %}
+                                        <br><i class="fas fa-vector-square"></i> Boundary #{{ detection.camera.farm_boundary.id }}
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                <td>
+                                    <div>{{ detection.confidence_percentage|floatformat:0 }}%</div>
+                                    <div class="confidence-bar">
+                                        <div class="confidence-fill {{ detection.detection_type.name }}" 
+                                             style="width: {{ detection.confidence_percentage|default:0 }}%"></div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div>{{ detection.detected_at|date:"M d, Y" }}</div>
+                                    <div class="text-muted">{{ detection.detected_at|time:"H:i" }}</div>
+                                    <small class="text-muted">{{ detection.detected_at|timesince }} ago</small>
+                                </td>
+                                <td>
+                                    {% if detection.is_false_positive %}
+                                        <span class="false-positive-badge">False Positive</span>
+                                    {% else %}
+                                        <span class="badge bg-success">Valid</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <!-- Eye icon goes to detail page -->
+                                        <a href="{% url 'detection_management:detection_detail' detection.id %}" 
+                                           class="btn btn-primary btn-sm" 
+                                           title="View Details">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        
+                                        
+                                        
+                                        <!-- False positive toggle button -->
+                                        <button class="btn btn-sm toggle-false-positive {% if detection.is_false_positive %}btn-outline-success{% else %}btn-outline-warning{% endif %}" 
+                                                data-detection-id="{{ detection.id }}"
+                                                data-is-false="{{ detection.is_false_positive|yesno:'true,false' }}"
+                                                title="{% if detection.is_false_positive %}Mark as Valid{% else %}Mark as False Positive{% endif %}">
+                                            {% if detection.is_false_positive %}
+                                                <i class="fas fa-check-circle"></i>
+                                            {% else %}
+                                                <i class="fas fa-flag"></i>
+                                            {% endif %}
+                                        </button>
+                                        
+                                        <!-- Download original button -->
+                                        {% if detection.image_original %}
+                                        <a href="{{ detection.image_original.url }}" 
+                                           target="_blank" 
+                                           class="btn btn-outline-secondary btn-sm" 
+                                           title="Download Original">
+                                            <i class="fas fa-download"></i>
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                {% if page_obj.has_other_pages %}
+                <nav aria-label="Detection history pagination">
+                    <ul class="pagination">
+                        {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if detection_type %}&detection_type={{ detection_type }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if date_range %}&date_range={{ date_range }}{% endif %}">First</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if detection_type %}&detection_type={{ detection_type }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if date_range %}&date_range={{ date_range }}{% endif %}">Previous</a>
+                        </li>
+                        {% endif %}
+
+                        {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ num }}</span>
+                        </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}{% if detection_type %}&detection_type={{ detection_type }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if date_range %}&date_range={{ date_range }}{% endif %}">{{ num }}</a>
+                        </li>
+                        {% endif %}
+                        {% endfor %}
+
+                        {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if detection_type %}&detection_type={{ detection_type }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if date_range %}&date_range={{ date_range }}{% endif %}">Next</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if detection_type %}&detection_type={{ detection_type }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if date_range %}&date_range={{ date_range }}{% endif %}">Last</a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+
+                {% else %}
+                <!-- Empty State -->
+                <div class="empty-state">
+                    <i class="fas fa-search"></i>
+                    <h3>No Detections Found</h3>
+                    {% if search_query or detection_type or status or date_range %}
+                    <p>No detections match your search criteria.</p>
+                    <a href="{% url 'detection_management:detection_history' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-times"></i> Clear Filters
+                    </a>
+                    {% else %}
+                    <p>No AI detections have been recorded yet.</p>
+                    
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+
+    <!-- Image Modal -->
+    <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="imageModalLabel">Detection Image</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <img id="modalImage" src="" alt="Detection Image" class="modal-image">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <a id="downloadLink" href="" target="_blank" class="btn btn-primary">
+                        <i class="fas fa-download"></i> Download
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block extra_js %}
+{% csrf_token %}
+<script>
+    // Get CSRF token
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    // Handle false positive toggle
+    document.querySelectorAll('.toggle-false-positive').forEach(button => {
+    button.addEventListener('click', function() {
+        const detectionId = this.dataset.detectionId;
+        const isFalse = this.dataset.isFalse === 'true';
+        const btn = this;
+        
+        // Add loading state
+        btn.classList.add('loading');
+        btn.disabled = true;
+        
+        fetch(`/detection/mark-false-positive/${detectionId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                'is_false_positive': !isFalse
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                // Show success message
+                if (typeof showToast === 'function') {
+                    showToast('Detection status updated successfully', 'success');
+                }
+                
+                // Update button state immediately
+                const newIsFalse = !isFalse;
+                btn.dataset.isFalse = newIsFalse.toString();
+                
+                // Update button appearance and text
+                if (newIsFalse) {
+                    // Now false positive - show check button (green)
+                    btn.className = 'btn btn-sm toggle-false-positive btn-success';
+                    btn.innerHTML = '<i class="fas fa-check-circle"></i>';
+                    btn.title = 'Mark as Valid';
+                } else {
+                    // Now valid - show flag button (warning outline)
+                    btn.className = 'btn btn-sm toggle-false-positive btn-outline-warning';
+                    btn.innerHTML = '<i class="fas fa-flag"></i>';
+                    btn.title = 'Mark as False Positive';
+                }
+                
+                // Update status badge in the same row
+                const statusCell = btn.closest('tr').querySelector('td:nth-child(6)');
+                if (statusCell) {
+                    if (newIsFalse) {
+                        statusCell.innerHTML = '<span class="false-positive-badge">False Positive</span>';
+                    } else {
+                        statusCell.innerHTML = '<span class="badge bg-success">Valid</span>';
+                    }
+                }
+                
+                // Remove loading state
+                btn.classList.remove('loading');
+                btn.disabled = false;
+                
+            } else {
+                throw new Error(data.message || 'Unknown error occurred');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            
+            // Show error message
+            if (typeof showToast === 'function') {
+                showToast('Error updating detection status: ' + error.message, 'error');
+            } else {
+                alert('Error updating detection status: ' + error.message);
+            }
+            
+            // Remove loading state
+            btn.classList.remove('loading');
+            btn.disabled = false;
+        });
+    });
+});
+
+    // Handle image modal
+    document.addEventListener('DOMContentLoaded', function() {
+        const imageModal = document.getElementById('imageModal');
+        const modalImage = document.getElementById('modalImage');
+        const downloadLink = document.getElementById('downloadLink');
+        
+        if (imageModal) {
+            imageModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+                const imageSrc = button.getAttribute('data-image-src');
+                const detectionId = button.getAttribute('data-detection-id');
+                
+                if (modalImage && imageSrc) {
+                    modalImage.src = imageSrc;
+                }
+                if (downloadLink && imageSrc) {
+                    downloadLink.href = imageSrc;
+                }
+            });
+        }
+    });
+
+    // Auto-submit form when filters change
+    document.querySelectorAll('select[name="detection_type"], select[name="status"], select[name="date_range"]').forEach(select => {
+        select.addEventListener('change', function() {
+            this.form.submit();
+        });
+    });
+</script>
+{% endblock %}

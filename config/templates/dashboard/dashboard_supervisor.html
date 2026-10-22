@@ -1,0 +1,969 @@
+{% extends "dashboard/dashboard_base.html" %}
+
+{% block title %}Supervisor Dashboard{% endblock %}
+{% block nav_dashboard %}active{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-title {
+        margin: 0;
+        color: #2c3e50;
+        font-size: 1.8rem;
+        font-weight: 600;
+    }
+
+    .breadcrumb-nav {
+        background: none;
+        padding: 0;
+        margin: 5px 0 0 0;
+    }
+
+    .breadcrumb-nav .breadcrumb-item {
+        color: #6c757d;
+        font-size: 14px;
+    }
+
+    .breadcrumb-nav .breadcrumb-item.active {
+        color: var(--primary-color);
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        border: none;
+        transition: all 0.3s ease;
+        height: 100%;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card.projects::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(135deg, var(--info-color), #138496);
+    }
+
+    .stat-card.cameras::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(135deg, var(--warning-color), #e0a800);
+    }
+
+    .stat-card.alerts::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(135deg, var(--danger-color), #c82333);
+    }
+
+    .stat-card.detections::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(135deg, var(--success-color), #1e7e34);
+    }
+
+    .stat-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
+    }
+
+    .stat-icon {
+        width: 65px;
+        height: 65px;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 26px;
+        color: white;
+        margin-bottom: 20px;
+    }
+
+    .stat-icon.projects { background: linear-gradient(135deg, var(--info-color), #138496); }
+    .stat-icon.cameras { background: linear-gradient(135deg, var(--warning-color), #e0a800); }
+    .stat-icon.alerts { background: linear-gradient(135deg, var(--danger-color), #c82333); }
+    .stat-icon.detections { background: linear-gradient(135deg, var(--success-color), #1e7e34); }
+
+    .stat-number {
+        font-size: 2.8rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin: 0;
+        line-height: 1;
+    }
+
+    .stat-label {
+        color: #6c757d;
+        font-size: 14px;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-top: 8px;
+    }
+
+    .welcome-card {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+        color: white;
+        border-radius: 20px;
+        padding: 35px;
+        margin-bottom: 30px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .welcome-card::before {
+        content: '';
+        position: absolute;
+        top: -50px;
+        right: -50px;
+        width: 200px;
+        height: 200px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+    }
+
+    .project-card {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        border: none;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .project-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+    }
+
+    .project-card::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 4px;
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .project-card:hover::after {
+        opacity: 1;
+    }
+
+    .detection-card {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        border: none;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .detection-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+    }
+
+    .detection-card.fire::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 4px;
+        background: linear-gradient(135deg, #ff5722, #e64a19);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .detection-card.person::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 4px;
+        background: linear-gradient(135deg, #2196F3, #1976D2);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .detection-card:hover::after {
+        opacity: 1;
+    }
+
+    .project-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+
+    .project-name {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin: 0;
+        text-decoration: none;
+    }
+
+    .project-name:hover {
+        color: var(--primary-color);
+    }
+
+    .project-status {
+        padding: 6px 15px;
+        border-radius: 25px;
+        font-size: 12px;
+        font-weight: 500;
+        text-transform: uppercase;
+    }
+
+    .status-active {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .status-inactive {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .access-code-section {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 18px;
+        margin-top: 15px;
+    }
+
+    .access-code {
+        font-family: 'Courier New', monospace;
+        font-size: 18px;
+        font-weight: bold;
+        color: var(--primary-color);
+        letter-spacing: 2px;
+    }
+
+    .project-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 15px;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+        border: none;
+        border-radius: 10px;
+        padding: 12px 25px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(76, 175, 80, 0.3);
+    }
+
+    .btn-outline-primary {
+        border: 2px solid var(--primary-color);
+        color: var(--primary-color);
+        background: transparent;
+        border-radius: 10px;
+        padding: 10px 20px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .btn-outline-primary:hover {
+        background: var(--primary-color);
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 30px;
+        color: #6c757d;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .empty-state i {
+        font-size: 3rem;
+        margin-bottom: 15px;
+        opacity: 0.5;
+    }
+
+    .project-stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 15px;
+        margin-top: 15px;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 10px;
+    }
+
+    .stat-item {
+        text-align: center;
+        padding: 10px;
+    }
+
+    .stat-item .number {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--primary-color);
+        margin-bottom: 5px;
+    }
+
+    .stat-item .label {
+        font-size: 12px;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .click-hint {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        padding: 5px 10px;
+        border-radius: 15px;
+        font-size: 11px;
+        font-weight: 500;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .project-card .click-hint {
+        background: rgba(76, 175, 80, 0.1);
+        color: var(--primary-color);
+    }
+
+    .detection-card.fire .click-hint {
+        background: rgba(255, 87, 34, 0.1);
+        color: #ff5722;
+    }
+
+    .detection-card.person .click-hint {
+        background: rgba(33, 150, 243, 0.1);
+        color: #2196F3;
+    }
+
+    .project-card:hover .click-hint,
+    .detection-card:hover .click-hint {
+        opacity: 1;
+    }
+
+    .detection-image {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        border-radius: 12px;
+        margin-bottom: 15px;
+    }
+
+    .detection-badge {
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+        color: white;
+        margin-bottom: 10px;
+        display: inline-block;
+    }
+
+    .detection-badge.fire {
+        background: #ff5722;
+    }
+
+    .detection-badge.person {
+        background: #2196F3;
+    }
+
+    .confidence-bar {
+        width: 100%;
+        height: 8px;
+        background: #e9ecef;
+        border-radius: 4px;
+        overflow: hidden;
+        margin-bottom: 15px;
+        position: relative;
+    }
+
+    .confidence-fill {
+        height: 100%;
+        transition: width 0.3s ease;
+        min-width: 2px;
+        max-width: 100%;
+    }
+
+    .confidence-fill.fire {
+        background: #ff5722;
+    }
+
+    .confidence-fill.person {
+        background: #2196F3;
+    }
+
+    .detection-meta {
+        font-size: 14px;
+        color: #6c757d;
+        margin-bottom: 10px;
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding: 0;
+    }
+
+    .section-title {
+        font-size: 1.4rem;
+        font-weight: 600;
+        color: var(--primary-color);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .section-title i {
+        color: var(--primary-color);
+        font-size: 1.2rem;
+    }
+
+    .section-header .btn {
+        font-size: 13px;
+        padding: 8px 16px;
+        border-radius: 8px;
+    }
+
+    .copy-btn {
+        position: relative;
+        overflow: hidden;
+    }
+
+    .copy-btn.copied {
+        background: var(--success-color) !important;
+        border-color: var(--success-color) !important;
+        color: white !important;
+    }
+
+    .card-content {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        height: 100%;
+    }
+
+    @media (max-width: 768px) {
+        .project-stats {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        
+        .section-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 15px;
+        }
+        
+        .section-header .btn {
+            align-self: stretch;
+            text-align: center;
+        }
+    }
+
+    .detection-card.smoke::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 4px;
+        background: linear-gradient(135deg, var(--smoke-color), #757575);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .detection-card.smoke .click-hint {
+        background: rgba(158, 158, 158, 0.1);
+        color: var(--smoke-color);
+    }
+
+    .detection-badge.smoke {
+        background: var(--smoke-color);
+    }
+
+    .confidence-fill.smoke {
+        background: var(--smoke-color);
+    }
+
+    .stat-card.smoke::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(135deg, var(--smoke-color), #757575);
+    }
+
+    .stat-icon.smoke { 
+        background: linear-gradient(135deg, var(--smoke-color), #757575); 
+    }
+
+    .stat-card.nodes::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 4px;
+        background: linear-gradient(135deg, #673ab7, #512da8);
+    }
+    .stat-icon.nodes {
+        background: linear-gradient(135deg, #673ab7, #512da8);
+    }
+
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Welcome Section -->
+<div class="welcome-card">
+    <div class="row align-items-center">
+        <div class="col-md-8">
+            <h1 class="mb-2">Welcome back, {{ user.get_full_name|default:user.username }}!</h1>
+            <p class="mb-0 opacity-75">
+                {% if user.user_type == 'supervisor' %}
+                    Monitor and manage your farm operations from this dashboard.
+                {% else %}
+                    Keep track of your farm's security and monitoring status.
+                {% endif %}
+            </p>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <div class="d-flex align-items-center justify-content-md-end">
+                <i class="fas fa-tachometer-alt fa-3x opacity-50"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="stat-card projects">
+            <div class="stat-icon projects">
+                <i class="fas fa-project-diagram"></i>
+            </div>
+            <h3 class="stat-number">{{ project_count }}</h3>
+            <p class="stat-label">Active Projects</p>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="stat-card cameras">
+            <div class="stat-icon cameras">
+                <i class="fas fa-video"></i>
+            </div>
+            <h3 class="stat-number">{{ camera_count|default:0 }}</h3>
+            <p class="stat-label">AI Cameras</p>
+        </div>
+    </div>
+
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="stat-card nodes">
+            <div class="stat-icon nodes">
+                <i class="fas fa-microchip"></i>
+            </div>
+            <h3 class="stat-number">{{ node_count|default:0 }}</h3>
+            <p class="stat-label">IoT Nodes</p>
+        </div>
+    </div>
+</div>
+
+
+{% if latest_irrigation %}
+<div class="row mb-4">
+  <div class="col-12">
+    <div class="section-header">
+     <h4 class="section-title">
+  <i class="fas fa-tint"></i> Latest Irrigation Estimation
+</h4>
+      <small class="text-muted">
+         {{ latest_irrigation.computed_at|date:"d M Y \\a\\t H:i" }}
+        — {{ latest_irrigation.node.project.name }}
+      </small>
+    </div>
+
+    <div class="row">
+              <!-- Crop Type -->
+      <div class="col-md-2 col-sm-6 mb-3">
+        <div class="stat-card" style="position:relative;overflow:hidden;">
+          <div style="position:absolute;top:0;left:0;right:0;height:4px;
+                      background:linear-gradient(135deg,#4CAF50,#2e7d32);"></div>
+          <div class="stat-icon" style="background:linear-gradient(135deg,#4CAF50,#2e7d32);
+                                        width:50px;height:50px;font-size:20px;margin-bottom:12px;">
+            <i class="fas fa-seedling"></i>
+          </div>
+          <h3 class="stat-number" style="font-size:1.3rem;">{{ latest_irrigation.node.project.crop.crop_name|default:"--" }}</h3>
+          <p class="stat-label">Crop Type</p>
+        </div>
+      </div>
+
+      <!-- Growth Stage -->
+      <div class="col-md-2 col-sm-6 mb-3">
+        <div class="stat-card" style="position:relative;overflow:hidden;">
+          <div style="position:absolute;top:0;left:0;right:0;height:4px;
+                      background:linear-gradient(135deg,#009688,#00695c);"></div>
+          <div class="stat-icon" style="background:linear-gradient(135deg,#009688,#00695c);
+                                        width:50px;height:50px;font-size:20px;margin-bottom:12px;">
+            <i class="fas fa-chart-line"></i>
+          </div>
+          <h3 class="stat-number" style="font-size:1.3rem;">{{ latest_irrigation.node.project.current_stage|default:"--" }}</h3>
+          <p class="stat-label">Growth Stage</p>
+        </div>
+      </div>
+
+      <!-- Pu + pluie -->
+      <div class="col-md-2 col-sm-6 mb-3">
+        <div class="stat-card" style="position:relative;overflow:hidden;">
+          <div style="position:absolute;top:0;left:0;right:0;height:4px;
+                      background:linear-gradient(135deg,#0288d1,#01579b);"></div>
+          <div class="stat-icon" style="background:linear-gradient(135deg,#0288d1,#01579b);
+                                        width:50px;height:50px;font-size:20px;margin-bottom:12px;">
+            <i class="fas fa-cloud-rain"></i>
+          </div>
+          <h3 class="stat-number" style="font-size:1.8rem;">{{ latest_irrigation.pu_mm }}</h3>
+          <p class="stat-label">Pu mm</p>
+          <small class="text-muted">Rainfall : {{ latest_irrigation.rainfall_mm }} mm</small>
+        </div>
+      </div>
+
+      <!-- Salinité ECw / ECe / FL -->
+      <div class="col-md-2 col-sm-6 mb-3">
+        <div class="stat-card" style="position:relative;overflow:hidden;">
+          <div style="position:absolute;top:0;left:0;right:0;height:4px;
+                      background:linear-gradient(135deg,
+                      {% if latest_irrigation.salinity_risk == 'high' %}#b71c1c,#c62828
+                      {% elif latest_irrigation.salinity_risk == 'medium' %}#e65100,#bf360c
+                      {% elif latest_irrigation.salinity_risk == 'low' %}#f9a825,#f57f17
+                      {% else %}#2e7d32,#1b5e20{% endif %});"></div>
+          <div class="stat-icon" style="background:linear-gradient(135deg,
+            {% if latest_irrigation.salinity_risk == 'high' %}#b71c1c,#c62828
+            {% elif latest_irrigation.salinity_risk == 'medium' %}#e65100,#bf360c
+            {% elif latest_irrigation.salinity_risk == 'low' %}#f9a825,#f57f17
+            {% else %}#2e7d32,#1b5e20{% endif %});
+            width:50px;height:50px;font-size:20px;margin-bottom:12px;">
+            <i class="fas fa-flask"></i>
+          </div>
+          <h3 class="stat-number" style="font-size:1.8rem;">{{ latest_irrigation.ecw_dSm }}</h3>
+          <p class="stat-label">ECw dS/m</p>
+         <!-- <small class="text-muted">
+            ECE : {{ latest_irrigation.ece_dSm }} dS/m
+          </small>-->
+          <div class="mt-1">
+            <span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:10px;
+              {% if latest_irrigation.salinity_risk == 'high' %}background:#ffebee;color:#b71c1c;
+              {% elif latest_irrigation.salinity_risk == 'medium' %}background:#fff3e0;color:#e65100;
+              {% elif latest_irrigation.salinity_risk == 'low' %}background:#fffde7;color:#f57f17;
+              {% else %}background:#e8f5e9;color:#2e7d32;{% endif %}">
+              {% if latest_irrigation.salinity_risk == 'high' %}🚨 Critical
+              {% elif latest_irrigation.salinity_risk == 'medium' %}⚠️ High
+              {% elif latest_irrigation.salinity_risk == 'low' %}⚠️ Low
+              {% else %}✅ Normal{% endif %}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Humidité sol -->
+      <div class="col-md-2 col-sm-6 mb-3">
+        <div class="stat-card" style="position:relative;overflow:hidden;">
+          <div style="position:absolute;top:0;left:0;right:0;height:4px;
+                      background:linear-gradient(135deg,#795548,#5d4037);"></div>
+          <div class="stat-icon" style="background:linear-gradient(135deg,#795548,#5d4037);
+                                        width:50px;height:50px;font-size:20px;margin-bottom:12px;">
+            <i class="fas fa-layer-group"></i>
+          </div>
+          <h3 class="stat-number" style="font-size:1.8rem;">{{ latest_irrigation.soil_moisture|default:"--" }}{% if latest_irrigation.soil_moisture %}%{% endif %}</h3>
+          <p class="stat-label">Soil Moisture</p>
+          {% if latest_irrigation.soil_moisture %}
+            {% with sm=latest_irrigation.soil_moisture %}
+              {% if sm >= 16 %}
+                <small style="color:#2e7d32;font-weight:600;">✅ Optimal</small>
+              {% elif sm >= 10 %}
+                <small style="color:#e65100;font-weight:600;">⚠️ Stress</small>
+              {% else %}
+                <small style="color:#b71c1c;font-weight:600;">🚨 Critical</small>
+              {% endif %}
+            {% endwith %}
+          {% else %}
+            <small class="text-muted">Capteur absent</small>
+          {% endif %}
+          <!--<div class="col-auto text-muted" style="font-size:13px;">
+              EG = {{ latest_irrigation.eg }} |
+            </div>-->
+        </div>
+      </div>
+
+      <!-- Besoins totaux ML -->
+      {% if latest_irrigation.b_totaux_ml %}
+      <div class="col-md-2 col-sm-6 mb-3">
+        <div class="stat-card" style="position:relative;overflow:hidden;">
+          <div style="position:absolute;top:0;left:0;right:0;height:4px;
+                      background:linear-gradient(135deg,#534AB7,#3730a3);"></div>
+          <div class="stat-icon" style="background:linear-gradient(135deg,#534AB7,#3730a3);
+                                        width:50px;height:50px;font-size:20px;margin-bottom:12px;">
+            <i class="fas fa-robot"></i>
+          </div>
+          <h3 class="stat-number" style="font-size:1.8rem;">{{ latest_irrigation.b_totaux_ml }}</h3>
+          <p class="stat-label">Total Requirements mm/j</p>
+          <small class="text-muted">AI Prediction</small>
+        </div>
+      </div>
+      {% endif %}
+
+    </div>
+  </div>
+</div>
+{% endif %}
+
+
+<!-- Main Content: Latest Project -->
+<div class="row">
+    <!-- Latest Project -->
+    <div class="col-lg-10 col-md-11 mx-auto mb-4">
+        <div class="section-header">
+            <h4 class="section-title">
+                <i class="fas fa-project-diagram"></i>
+                Latest Project
+            </h4>
+            <a href="{% url 'project_management:project_list' %}" class="btn btn-outline-primary">
+                <i class="fas fa-list"></i> View All Projects
+            </a>
+        </div>
+        
+        {% if latest_project %}
+        <div class="project-card" onclick="goToProject('{{ latest_project.slug }}')">
+            <div class="click-hint">
+                <i class="fas fa-mouse-pointer"></i> Click to view
+            </div>
+            
+            <div class="card-content">
+                <div class="project-header">
+                    <div>
+                        <h5 class="project-name">{{ latest_project.name }}</h5>
+                        <small class="text-muted">
+                            <i class="fas fa-map-marker-alt"></i> {{ latest_project.location_city|default:"Location not set" }}
+                        </small>
+                    </div>
+                    <span class="project-status {% if latest_project.is_active %}status-active{% else %}status-inactive{% endif %}">
+                        {% if latest_project.is_active %}Active{% else %}Inactive{% endif %}
+                    </span>
+                </div>
+                
+                <p class="text-muted mb-3">{{ latest_project.description|default:"No description available." }}</p>
+                
+                <!-- Project Statistics -->
+                <div class="project-stats">
+                    <div class="stat-item">
+                        <div class="number">{{ latest_project.total_boundaries|default:0 }}</div>
+                        <div class="label">Boundaries</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="number">{{ latest_project.total_cameras|default:0 }}</div>
+                        <div class="label">Cameras</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="number">{{ latest_project.total_nodes|default:0 }}</div>
+                        <div class="label">Nodes</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="number">{{ latest_project.total_detections|default:0 }}</div>
+                        <div class="label">Detections</div>
+                    </div>
+                </div>
+                
+                {% if user.user_type == 'supervisor' %}
+                <div class="access-code-section">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <small class="text-muted">Access Code for Clients:</small><br>
+                            <span class="access-code">{{ latest_project.access_code }}</span>
+                        </div>
+                        <button class="btn btn-sm btn-outline-primary copy-btn" onclick="copyAccessCode(event, '{{ latest_project.access_code }}')">
+                            <i class="fas fa-copy"></i> Copy
+                        </button>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-project-diagram"></i>
+            <h5>No Projects Yet</h5>
+            <p>
+                {% if user.user_type == 'supervisor' %}
+                    Create your first project to start monitoring your farm.
+                {% else %}
+                    Contact your supervisor to get access to a project.
+                {% endif %}
+            </p>
+            {% if user.user_type == 'supervisor' %}
+            <a href="{% url 'project_management:create_project_wizard' %}" class="btn btn-primary">
+                Create Your First Project
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function goToProject(slug) {
+        window.location.href = `/projects/project/${slug}/`;
+    }
+
+    function viewDetections(event, projectId) {
+        event.stopPropagation();
+        window.location.href = `/detection/project/${projectId}/`;
+    }
+
+    function viewDetectionDetails(detectionId) {
+        window.location.href = `/detection/${detectionId}/`;
+    }
+
+    function viewCameraDetections(event, cameraId) {
+        event.stopPropagation();
+        window.location.href = `/detection/camera/${cameraId}/`;
+    }
+
+    function copyAccessCode(event, code) {
+        event.stopPropagation();
+        event.preventDefault();
+        
+        const btn = event.target.closest('button');
+        const originalHTML = btn.innerHTML;
+        
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(code).then(function() {
+                btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                btn.classList.add('copied');
+                
+                setTimeout(() => {
+                    btn.innerHTML = originalHTML;
+                    btn.classList.remove('copied');
+                }, 2000);
+                
+                if (typeof showToast === 'function') {
+                    showToast('Access code copied to clipboard!', 'success');
+                }
+            }).catch(function(err) {
+                console.error('Failed to copy: ', err);
+                fallbackCopyTextToClipboard(code, btn, originalHTML);
+            });
+        } else {
+            fallbackCopyTextToClipboard(code, btn, originalHTML);
+        }
+    }
+
+    function fallbackCopyTextToClipboard(text, btn, originalHTML) {
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        
+        textArea.style.top = '0';
+        textArea.style.left = '0';
+        textArea.style.position = 'fixed';
+        textArea.style.opacity = '0';
+        
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        
+        try {
+            const successful = document.execCommand('copy');
+            if (successful) {
+                btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                btn.classList.add('copied');
+                
+                setTimeout(() => {
+                    btn.innerHTML = originalHTML;
+                    btn.classList.remove('copied');
+                }, 2000);
+                
+                if (typeof showToast === 'function') {
+                    showToast('Access code copied to clipboard!', 'success');
+                }
+            } else {
+                throw new Error('Copy command failed');
+            }
+        } catch (err) {
+            console.error('Fallback copy failed: ', err);
+            if (typeof showToast === 'function') {
+                showToast('Failed to copy access code. Please copy manually: ' + text, 'error');
+            } else {
+                alert('Failed to copy access code. Please copy manually: ' + text);
+            }
+        }
+        
+        document.body.removeChild(textArea);
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const cards = document.querySelectorAll('.stat-card, .project-card, .detection-card');
+        cards.forEach((card, index) => {
+            setTimeout(() => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                
+                setTimeout(() => {
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, 100);
+            }, index * 100);
+        });
+    });
+</script>
+{% endblock %}

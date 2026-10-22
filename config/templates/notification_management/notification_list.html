@@ -1,0 +1,224 @@
+{% extends "dashboard/dashboard_base.html" %}
+
+{% block title %}Notifications{% endblock %}
+
+{% block extra_css %}
+<style>
+    .notif-header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-bottom: 22px;
+    }
+
+    .notif-summary {
+        color: #6c757d;
+        font-size: 14px;
+    }
+
+    .notif-summary strong {
+        color: var(--primary-color);
+    }
+
+    .notif-card {
+        background: white;
+        border-radius: 15px;
+        padding: 18px 22px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+        margin-bottom: 12px;
+        display: flex;
+        align-items: flex-start;
+        gap: 16px;
+        transition: all 0.2s ease;
+        position: relative;
+        border-left: 4px solid #adb5bd;
+    }
+
+    .notif-card:hover {
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        transform: translateX(2px);
+    }
+
+    .notif-card.unread {
+        background: #f9fdf9;
+    }
+
+    /* Severity border colors */
+    .notif-card.critical { border-left-color: #dc3545; }
+    .notif-card.warning  { border-left-color: #ffc107; }
+    .notif-card.info      { border-left-color: #17a2b8; }
+
+    .notif-icon-badge {
+        width: 44px;
+        height: 44px;
+        min-width: 44px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 19px;
+        color: white;
+        background: linear-gradient(135deg, #9E9E9E, #6c757d);
+    }
+
+    .notif-icon-badge.critical { background: linear-gradient(135deg, #dc3545, #b71c1c); }
+    .notif-icon-badge.warning  { background: linear-gradient(135deg, #ffc107, #e65100); }
+    .notif-icon-badge.info      { background: linear-gradient(135deg, #17a2b8, #0d6efd); }
+
+    .notif-body {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .notif-top-line {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 3px;
+    }
+
+    .notif-title {
+        font-weight: 600;
+        color: #2c3e50;
+        font-size: 15px;
+    }
+
+    .notif-unread-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--primary-color);
+        flex-shrink: 0;
+    }
+
+    .notif-message {
+        color: #6c757d;
+        font-size: 14px;
+        margin-bottom: 5px;
+        line-height: 1.4;
+    }
+
+    .notif-meta {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .notif-time {
+        color: #adb5bd;
+        font-size: 12px;
+    }
+
+    .notif-type-tag {
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        padding: 2px 9px;
+        border-radius: 10px;
+    }
+
+    .notif-type-tag.irrigation { background: #e3f2fd; color: #0d6efd; }
+    .notif-type-tag.detection  { background: #fff3e0; color: #e65100; }
+    .notif-type-tag.system     { background: #f1f1f1; color: #6c757d; }
+
+    .notif-delete-btn {
+        background: none;
+        border: none;
+        color: #d0d0d0;
+        font-size: 15px;
+        padding: 6px;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+        align-self: center;
+    }
+
+    .notif-delete-btn:hover {
+        color: #dc3545;
+        background: rgba(220, 53, 69, 0.08);
+    }
+
+    .notif-actions-bar {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="welcome-card">
+    <h1 class="mb-2"><i class="fas fa-bell"></i> Notifications</h1>
+    <p class="mb-0 opacity-75">All alerts and updates for your projects.</p>
+</div>
+
+<div class="row">
+    <div class="col-12">
+
+        <div class="notif-header-row">
+            <div class="notif-summary">
+                {% if notifications %}
+                    {{ notifications|length }} notification{{ notifications|length|pluralize }}
+                {% endif %}
+            </div>
+
+            {% if notifications %}
+            <div class="notif-actions-bar">
+                <form method="post" action="{% url 'notification_management:clear_all_notifications' %}"
+                      onsubmit="return confirm('Delete all notifications? This cannot be undone.');">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-danger btn-sm">
+                        <i class="fas fa-trash"></i> Clear all
+                    </button>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+
+        {% if notifications %}
+            {% for n in notifications %}
+            <div class="notif-card
+                {% if not n.is_read %}unread{% endif %}
+                {% if '🚨' in n.title %}critical{% elif '⚠️' in n.title %}warning{% elif n.notification_type == 'irrigation' %}info{% endif %}">
+
+                <div class="notif-icon-badge
+                    {% if '🚨' in n.title %}critical{% elif '⚠️' in n.title %}warning{% elif n.notification_type == 'irrigation' %}info{% endif %}">
+                    {% if n.notification_type == 'irrigation' %}💧
+                    {% elif n.notification_type == 'detection' %}👁️
+                    {% else %}🔔
+                    {% endif %}
+                </div>
+
+                <div class="notif-body">
+                    <div class="notif-top-line">
+                        {% if not n.is_read %}<span class="notif-unread-dot"></span>{% endif %}
+                        <span class="notif-title">{{ n.title }}</span>
+                    </div>
+                    <div class="notif-message">{{ n.message }}</div>
+                    <div class="notif-meta">
+                        <span class="notif-time"><i class="far fa-clock"></i> {{ n.created_at|timesince }} ago</span>
+                        <span class="notif-type-tag {{ n.notification_type }}">{{ n.get_notification_type_display }}</span>
+                    </div>
+                </div>
+
+                <form method="post" action="{% url 'notification_management:delete_notification' n.id %}"
+                      onsubmit="return confirm('Delete this notification?');">
+                    {% csrf_token %}
+                    <button type="submit" class="notif-delete-btn" title="Delete">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </form>
+            </div>
+            {% endfor %}
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-bell"></i>
+            <h5>No notifications yet</h5>
+            <p>You'll see irrigation alerts and system updates here.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
